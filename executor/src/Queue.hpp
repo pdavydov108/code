@@ -1,8 +1,9 @@
 #pragma once
 
 #include <array>
-#include <stddef>
+#include <cstddef>
 #include <mutex>
+#include <condition_variable>
 
 namespace concurrency {
 inline namespace v1 {
@@ -16,14 +17,14 @@ class BoundedQueue {
     auto guard = std::unique_lock<std::mutex>(mute, std::try_lock); 
     if (!guard.owns_lock()) return false;
     if (hasSpace()) return false;
-    queue[++write % N] = std::move(t);
+    queue[++write % max] = std::move(t);
     cv.notify_one();
     return true;
   }
   bool tryPop(Task& t) noexcept {
     auto guard = std::unique_lock<std::mutex>(mute, std::try_lock); 
     if (!guard.owns_lock() || !hasData()) return false;
-    t = std::move(queue[++read % N]);
+    t = std::move(queue[++read % max]);
     return true;
   }
   bool pop(Task& t) noexcept {
@@ -32,7 +33,7 @@ class BoundedQueue {
     if (!hasData()) {
       cv.wait(guard, [this] { hasData(); });
     }
-    t = std::move(queue[++read % N]);
+    t = std::move(queue[++read % max]);
     return true;
   }
  private:
@@ -43,12 +44,12 @@ class BoundedQueue {
   // r**************w
   // ||||||||||||rw||
   bool hasSpace() const noexcept {
-    next = (write + 1) % N;
+    auto next = (write + 1) % max;
     if (next == read) return false;
     return true;
   }
   bool hasData() const noexcept {
-    next = (read + 1) % N;
+    auto next = (read + 1) % max;
     if (next == write || write < 0) return false;
     return true;
   }
@@ -64,7 +65,7 @@ class BoundedQueue {
 template <class Task, std::size_t N>
 class BoundedQueue {
  public:
-  Queue() {}
+  BoundedQueue() {}
   bool push(Task&& t, unsigned tid) noexcept {
     auto firstQueue = tid % N;
     auto lastQueue = (firstQueue - 1) % N;
@@ -87,7 +88,7 @@ class BoundedQueue {
     return true;
   }
  private:
-  std::array<detail::Queue, N> queues;
+  std::array<detail::BoundedQueue<Task>, N> queues;
 };
 }
 }

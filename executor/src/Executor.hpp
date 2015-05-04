@@ -1,12 +1,13 @@
 #pragma once
 
-#include <stddef>
+#include <cstddef>
 #include <thread>
 #include <vector>
+#include <Queue.hpp>
 
 namespace concurrency {
 inline namespace v1 {
-template <class Task, std::size_t N = std::thread::hardware_concurrency()>
+template <class Task, std::size_t N>
 class Executor {
  public:
   Executor() {
@@ -27,7 +28,7 @@ class Executor {
    std::array<std::thread, N> threads;
    BoundedQueue<Task, N> queue;
 };
-template <class Task, std::size_t N = std::thread::hardware_concurrency()>
+template <class Task, std::size_t N>
 bool submit(Task&& t) {
   static Executor<Task, N> executor;
   return executor.submit(std::forward<Task>(t));
