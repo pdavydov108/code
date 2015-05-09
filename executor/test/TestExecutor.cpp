@@ -1,7 +1,12 @@
 #include <gtest/gtest.h>
 #include <Executor.hpp>
 
-TEST(Test, Executor) {}
+using namespace concurrency;
+
+TEST(Test, Executor) {
+  Executor<std::function<void()>, 1> executor; 
+  ASSERT_EQ(executor.queue_size(), 0);
+}
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

@@ -21,4 +21,17 @@ include_directories(
 add_executable(executor_test test/TestExecutor.cpp)
 target_link_libraries(executor_test gtest gtest_main)
 add_test(executor_test executor_test)
+
+add_executable(ringbuffer_test test/TestRingBuffer.cpp)
+target_link_libraries(ringbuffer_test gtest gtest_main)
+add_test(ringbuffer_test ringbuffer_test)
+
+add_executable(executor_performance test/TestExecutorPerformance.cpp)
+target_link_libraries(executor_performance benchmark)
+add_test(executor_test executor_test)
+
 enable_testing()
+
+include_directories(${CMAKE_SOURCE_DIR}/dependencies)
+
+add_subdirectory(${CMAKE_SOURCE_DIR}/dependencies/benchmark)
