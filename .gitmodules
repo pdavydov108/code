@@ -1,0 +1,3 @@
+[submodule "executor/dependencies/benchmark"]
+	path = executor/dependencies/benchmark
+	url = https://github.com/google/benchmark
